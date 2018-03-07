@@ -1,0 +1,9 @@
+Vagrant.configure('2') do |config|
+    # Disable /vagrant synced folder
+    config.vm.synced_folder '.', '/vagrant', disabled: true
+
+    config.vm.define :server_1 do |ubuntu|
+        ubuntu.vm.box = 'geerlingguy/ubuntu1604'
+        ubuntu.vm.network :private_network, ip: '10.40.40.21'
+    end
+end

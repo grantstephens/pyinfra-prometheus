@@ -1,0 +1,17 @@
+[Unit]
+Description=Prometheus Server
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User={{ host.data.prometheus_user }}
+ExecStart={{ host.data.prometheus_bin_dir }}/prometheus \
+    --config.file /etc/default/prometheus.yml \
+    --storage.tsdb.path {{ host.data.prometheus_data_dir }} \
+    --web.console.templates={{ host.data.prometheus_install_dir }}/consoles \
+    --web.console.libraries={{ host.data.prometheus_install_dir }}/console_libraries
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

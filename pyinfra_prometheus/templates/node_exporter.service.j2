@@ -1,0 +1,13 @@
+[Unit]
+Description=Prometheus Node Exporter Service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User={{ host.data.prometheus_user }}
+ExecStart={{ host.data.node_exporter_bin_dir }}/node_exporter
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
