@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 if __name__ == '__main__':
     setup(
-        version='0.2',
+        version='0.4',
         name='pyinfra-prometheus',
         url='https://github.com/grantstephens/pyinfra-prometheus',
         description='Install & bootstrap prometheus clusters with pyinfra.',

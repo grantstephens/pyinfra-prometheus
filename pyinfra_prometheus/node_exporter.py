@@ -27,8 +27,8 @@ def install_node_exporter(state, host):
         state, host,
         {'Ensure the node_exporter install directory exists'},
         '{{ host.data.node_exporter_install_dir }}',
-        user=host.data.prometheus_user,
-        group=host.data.prometheus_user,
+        user=host.data.node_exporter_user,
+        group=host.data.node_exporter_user,
     )
 
     # Work out the filename
@@ -56,7 +56,8 @@ def install_node_exporter(state, host):
     server.shell(
         state, host,
         {'Extract node_exporter'},
-        'tar -xzf {{ host.data.node_exporter_temp_filename }} -C {{ host.data.node_exporter_install_dir }}',
+        'tar -xzf {{ host.data.node_exporter_temp_filename }}'
+        ' -C {{ host.data.node_exporter_install_dir }}',
         when=download_node_exporter.changed,
     )
 
@@ -64,9 +65,9 @@ def install_node_exporter(state, host):
         state, host,
         {'Symlink node_exporter to /usr/bin'},
         '{{ host.data.node_exporter_bin_dir }}/node_exporter',  # link
-        '{{ host.data.node_exporter_install_dir }}/{{ host.data.node_exporter_version_name }}/node_exporter',
+        '{{ host.data.node_exporter_install_dir }}/'
+        '{{ host.data.node_exporter_version_name }}/node_exporter',
     )
-
 
 
 @deploy('Configure node_exporter', data_defaults=DEFAULTS)

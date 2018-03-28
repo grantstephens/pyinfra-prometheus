@@ -39,7 +39,6 @@ def install_prometheus(state, host):
         group=host.data.prometheus_user,
     )
 
-
     # Work out the filename
     host.data.prometheus_version_name = (
         'prometheus-{0}.linux-'
@@ -65,7 +64,8 @@ def install_prometheus(state, host):
     server.shell(
         state, host,
         {'Extract prometheus'},
-        'tar -xzf {{ host.data.prometheus_temp_filename }} -C {{ host.data.prometheus_install_dir }}',
+        'tar -xzf {{ host.data.prometheus_temp_filename }}'
+        ' -C {{ host.data.prometheus_install_dir }}',
         when=download_prometheus.changed,
     )
 
@@ -75,7 +75,6 @@ def install_prometheus(state, host):
         '{{ host.data.prometheus_bin_dir }}/prometheus',  # link
         '{{ host.data.prometheus_install_dir }}/{{ host.data.prometheus_version_name }}/prometheus',
     )
-
 
 
 @deploy('Configure prometheus', data_defaults=DEFAULTS)

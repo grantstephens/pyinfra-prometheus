@@ -21,9 +21,11 @@ rule_files:
 # Here it's Prometheus itself.
 scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
-  {% for key, values in host.data.prometheus_jobs.items() %}
-  - job_name: {{key}}{% for config_type, nodes in values.items() %}
-    {{config_type}}:
-      - targets:{% for node in nodes %}
-        - '{{node}}'{% endfor %}{% endfor %}
-  {% endfor %}
+{% for job in host.data.prometheus_jobs %}
+- job_name: {% for key, value in job.items() %}{{key}}
+  {% for key1, value1 in value.items() %}{{key1}}: {% if value1 is string %}{{value1}}{% else %}{% for key2, value2 in value1.items() %}
+    - {{key2}}: {% for value3 in value2 %}
+      - {{value3}}{% endfor %}{% endfor %}{% endif %}
+  {% endfor %}        
+{% endfor %}{% endfor %}
+
