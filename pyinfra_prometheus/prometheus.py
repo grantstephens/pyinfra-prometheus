@@ -78,33 +78,65 @@ def install_prometheus(state, host):
 
 
 @deploy('Configure prometheus', data_defaults=DEFAULTS)
-def configure_prometheus(state, host, enable_service=True):
-    # Setup prometheus init
-    generate_service = files.template(
-        state, host,
-        {'Upload the prometheus systemd unit file'},
-        get_template_path('prometheus.service.j2'),
-        '/etc/systemd/system/prometheus.service',
-    )
-
+def configure_prometheus(state, host, enable_service=True, extra_args=None):
     # Configure prometheus
-    files.template(
+    generate_config = files.template(
         state, host,
         {'Upload the prometheus config file'},
         get_template_path('prometheus.yml.j2'),
         '/etc/default/prometheus.yml',
     )
-
-    # Start (/enable) the prometheus service
     op_name = 'Ensure prometheus service is running'
     if enable_service:
         op_name = '{0} and enabled'.format(op_name)
+        restart = generate_config.changed
 
-    init.systemd(
-        state, host,
-        {op_name},
-        'prometheus',
-        restarted=True,
-        enabled=enable_service,
-        daemon_reload=generate_service.changed,
-    )
+    if extra_args and ('--web.enable-lifecycle' in extra_args):
+        restart = False
+        hit_reload_endpoint = True
+    else:
+        hit_reload_endpoint = False
+    # Setup prometheus init
+    if host.fact.linux_distribution['major'] == 16:
+        generate_service = files.template(
+            state, host,
+            {'Upload the prometheus systemd unit file'},
+            get_template_path('prometheus.service.j2'),
+            '/etc/systemd/system/prometheus.service',
+            extra_args=extra_args,
+        )
+        # Start (/enable) the prometheus service
+        init.systemd(
+            state, host,
+            {op_name},
+            'prometheus',
+            running=True,
+            restarted=restart,
+            enabled=enable_service,
+            daemon_reload=generate_service.changed,
+        )
+        # This has to happen after the service reload
+        if hit_reload_endpoint:
+            server.shell(
+                state, host,
+                'curl -X POST http://localhost:9090/-/reload',
+            )
+
+    elif host.fact.linux_distribution['major'] == 14:
+        generate_service = files.template(
+            state, host,
+            {'Upload the prometheus init.d file'},
+            get_template_path('init.d.j2'),
+            '/etc/init.d/prometheus',
+            extra_args=extra_args,
+        )
+        # Start (/enable) the prometheus service
+        init.d(
+            state, host,
+            {op_name},
+            'prometheus',
+            running=True,
+            restarted=restart,
+            reloaded=generate_service.changed,
+            enabled=enable_service,
+        )

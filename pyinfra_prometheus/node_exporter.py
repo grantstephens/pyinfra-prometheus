@@ -71,24 +71,51 @@ def install_node_exporter(state, host):
 
 
 @deploy('Configure node_exporter', data_defaults=DEFAULTS)
-def configure_node_exporter(state, host, enable_service=True):
-    # Setup node_exporter init
-    generate_service = files.template(
-        state, host,
-        {'Upload the node_exporter systemd unit file'},
-        get_template_path('node_exporter.service.j2'),
-        '/etc/systemd/system/node_exporter.service',
-    )
+def configure_node_exporter(state, host, enable_service=True, extra_args=None):
 
-    # Start (/enable) the node_exporter service
     op_name = 'Ensure node_exporter service is running'
     if enable_service:
         op_name = '{0} and enabled'.format(op_name)
 
-    init.systemd(
-        state, host,
-        {op_name},
-        'node_exporter',
-        enabled=enable_service,
-        daemon_reload=generate_service.changed,
-    )
+    if host.fact.linux_distribution['major'] == 16:
+        # Setup node_exporter init
+        generate_service = files.template(
+            state, host,
+            {'Upload the node_exporter systemd unit file'},
+            get_template_path('node_exporter.service.j2'),
+            '/etc/systemd/system/node_exporter.service',
+            extra_args=extra_args,
+        )
+
+        init.systemd(
+            state, host,
+            {op_name},
+            'node_exporter',
+            running=True,
+            restarted=generate_service.changed,
+            daemon_reload=generate_service.changed,
+            enabled=enable_service,
+        )
+
+    elif host.fact.linux_distribution['major'] == 14:
+        generate_service = files.template(
+            state, host,
+            {'Upload the node_exporter init.d file'},
+            get_template_path('init.d.j2'),
+            '/etc/init.d/node_exporter',
+            mode=755,
+            ex_name='node_exporter',
+            ex_bin_dir=host.data.node_exporter_bin_dir,
+            ex_user=host.data.node_exporter_user,
+            extra_args=extra_args,
+        )
+        # Start (/enable) the prometheus service
+        init.d(
+            state, host,
+            {op_name},
+            'node_exporter',
+            running=True,
+            restarted=generate_service.changed,
+            reloaded=generate_service.changed,
+            enabled=enable_service,
+        )

@@ -10,7 +10,8 @@ ExecStart={{ host.data.prometheus_bin_dir }}/prometheus \
     --config.file /etc/default/prometheus.yml \
     --storage.tsdb.path {{ host.data.prometheus_data_dir }} \
     --web.console.templates={{ host.data.prometheus_install_dir }}/consoles \
-    --web.console.libraries={{ host.data.prometheus_install_dir }}/console_libraries
+    --web.console.libraries={{ host.data.prometheus_install_dir }}/console_libraries \
+    {% if extra_args is not none %}{{ extra_args }}{%endif %}
 Restart=on-failure
 
 [Install]

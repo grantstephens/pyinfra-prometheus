@@ -6,7 +6,7 @@ After=network-online.target
 [Service]
 Type=simple
 User={{ host.data.prometheus_user }}
-ExecStart={{ host.data.node_exporter_bin_dir }}/node_exporter
+ExecStart={{ host.data.node_exporter_bin_dir }}/node_exporter {% if extra_args is not none %}{{ extra_args }}{%endif %}
 Restart=on-failure
 
 [Install]

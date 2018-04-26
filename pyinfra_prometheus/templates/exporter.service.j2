@@ -1,0 +1,13 @@
+[Unit]
+Description={{ ex_name }} Exporter Service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User={{ ex_user }}
+ExecStart={{ ex_bin_dir }}/{{ ex_name }} {% if extra_args is not none %}{{ extra_args }}{%endif %}
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
