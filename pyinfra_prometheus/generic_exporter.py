@@ -85,7 +85,7 @@ def configure_exporter(
     if enable_service:
         op_name = '{0} and enabled'.format(op_name)
 
-    if host.fact.linux_distribution['major'] == 16:
+    if host.fact.linux_distribution['major'] >= 16:
         # Setup node_exporter init
         generate_service = files.template(
             state, host,

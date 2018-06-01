@@ -13,6 +13,7 @@ ExecStart={{ host.data.prometheus_bin_dir }}/prometheus \
     --web.console.libraries={{ host.data.prometheus_install_dir }}/console_libraries \
     {% if extra_args is not none %}{{ extra_args }}{%endif %}
 Restart=on-failure
+LimitNOFILE=infinity
 
 [Install]
 WantedBy=multi-user.target
