@@ -12,6 +12,7 @@ DEFAULTS = {
     'prometheus_scrape_interval': '15s',
     'prometheus_user': 'prometheus',
     'prometheus_version': None,
+    'prometheus_target_heap_size': None,
     'prometheus_jobs': [
         {'prometheus': {
             'static_configs': {'targets': [
