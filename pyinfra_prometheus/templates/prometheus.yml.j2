@@ -5,6 +5,13 @@ global:
   evaluation_interval: {{ host.data.prometheus_evaluation_interval }}
   # scrape_timeout is set to the global default (10s).
 
+# Store settings
+storage:
+  local:
+    {% if host.data.prometheus_target_heap_size -%}
+    target-heap-size: {{ host.data.prometheus_target_heap_size }}
+    {% endif %}
+
 # Alertmanager configuration
 alerting:
   alertmanagers:
