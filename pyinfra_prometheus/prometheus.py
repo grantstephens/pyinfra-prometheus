@@ -97,7 +97,7 @@ def configure_prometheus(state, host, enable_service=True, extra_args=None):
     else:
         hit_reload_endpoint = False
     # Setup prometheus init
-    if host.fact.linux_distribution['major'] == 16:
+    if host.fact.linux_distribution['major'] >= 16:
         generate_service = files.template(
             state, host,
             {'Upload the prometheus systemd unit file'},

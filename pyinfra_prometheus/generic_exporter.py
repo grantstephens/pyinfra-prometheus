@@ -58,7 +58,7 @@ def install_exporter(
     server.shell(
         state, host,
         {'Extract exporter'},
-        'tar -xzf {} -C {}/'.format(ex_temp_filename, ex_install_dir, ex_name),
+        'tar -xzf {} -C {}/'.format(ex_temp_filename, ex_install_dir),
         when=download_exporter.changed,
     )
 
