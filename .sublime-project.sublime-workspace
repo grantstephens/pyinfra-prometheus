@@ -1,0 +1,327 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"cf",
+				"cf_auth_headers"
+			],
+			[
+				"slug",
+				"slug_name"
+			],
+			[
+				"zero",
+				"zerotier_members"
+			],
+			[
+				"cd",
+				"cf_auth_headers"
+			],
+			[
+				"zer",
+				"zerotier_members"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": ".sublime-project",
+			"settings":
+			{
+				"buffer_size": 45,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "diff --git a/pyinfra_prometheus/prometheus.py b/pyinfra_prometheus/prometheus.py\nindex 582d0ce..b398143 100644\n--- a/pyinfra_prometheus/prometheus.py\n+++ b/pyinfra_prometheus/prometheus.py\n@@ -79,14 +79,6 @@ def install_prometheus(state, host):\n \n @deploy('Configure prometheus', data_defaults=DEFAULTS)\n def configure_prometheus(state, host, enable_service=True):\n-    # Setup prometheus init\n-    generate_service = files.template(\n-        state, host,\n-        {'Upload the prometheus systemd unit file'},\n-        get_template_path('prometheus.service.j2'),\n-        '/etc/systemd/system/prometheus.service',\n-    )\n-\n     # Configure prometheus\n     files.template(\n         state, host,\n@@ -94,17 +86,42 @@ def configure_prometheus(state, host, enable_service=True):\n         get_template_path('prometheus.yml.j2'),\n         '/etc/default/prometheus.yml',\n     )\n-\n-    # Start (/enable) the prometheus service\n     op_name = 'Ensure prometheus service is running'\n     if enable_service:\n         op_name = '{0} and enabled'.format(op_name)\n \n-    init.systemd(\n-        state, host,\n-        {op_name},\n-        'prometheus',\n-        restarted=True,\n-        enabled=enable_service,\n-        daemon_reload=generate_service.changed,\n-    )\n+    # Setup prometheus init\n+    if host.fact.linux_distribution['major'] == 16:\n+        generate_service = files.template(\n+            state, host,\n+            {'Upload the prometheus systemd unit file'},\n+            get_template_path('prometheus.service.j2'),\n+            '/etc/systemd/system/prometheus.service',\n+        )\n+        # Start (/enable) the prometheus service\n+        init.systemd(\n+            state, host,\n+            {op_name},\n+            'prometheus',\n+            restarted=True,\n+            enabled=enable_service,\n+            daemon_reload=generate_service.changed,\n+        )\n+\n+    elif host.fact.linux_distribution['major'] == 14:\n+        generate_service = files.template(\n+            state, host,\n+            {'Upload the prometheus init.d file'},\n+            get_template_path('init.d.j2'),\n+            '/etc/init.d/prometheus',\n+        )\n+        # Start (/enable) the prometheus service\n+        init.d(\n+            state, host,\n+            {op_name},\n+            'prometheus',\n+            running=True,\n+            restarted=True,\n+            reloaded=generate_service.changed,\n+            enabled=enable_service,\n+        )\n",
+			"settings":
+			{
+				"buffer_size": 2432,
+				"line_ending": "Unix",
+				"name": "Git Diff",
+				"read_only": true,
+				"scratch": true
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 784.0,
+		"last_filter": "close",
+		"selected_items":
+		[
+			[
+				"close",
+				"Project: Close"
+			],
+			[
+				"git sta",
+				"Git: Status"
+			],
+			[
+				"menu",
+				"View: Toggle Menu"
+			],
+			[
+				"save",
+				"Project: Save As"
+			],
+			[
+				"folder",
+				"Project: Add Folder"
+			],
+			[
+				"clos",
+				"File: Close All"
+			],
+			[
+				"vmen",
+				"View: Toggle Menu"
+			],
+			[
+				"mark",
+				"Set Syntax: Markdown"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"setti",
+				"Preferences: Settings"
+			],
+			[
+				"auto",
+				"Toggle AutoSave: all files"
+			]
+		],
+		"width": 994.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/grantstephens/Sync/Code/Python/Utils/PyInfra/pyinfra-prometheus"
+	],
+	"file_history":
+	[
+		"/home/grantstephens/Sync/Code/Web/rexfuzzle.git/_config.yml",
+		"/home/grantstephens/Sync/Code/Web/rexfuzzle.git/index.html",
+		"/home/grantstephens/Sync/Code/Python/Utils/PyInfra/node/dns_update.py"
+	],
+	"find":
+	{
+		"height": 79.0
+	},
+	"find_in_files":
+	{
+		"height": 201.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": ".sublime-project",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 45,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"git_gutter_is_enabled": true,
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2432,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								823,
+								823
+							]
+						],
+						"settings":
+						{
+							"git_gutter_is_enabled": false,
+							"git_root_dir": "/home/grantstephens/Sync/Code/Python/Utils/PyInfra/pyinfra-prometheus",
+							"syntax": "Packages/Diff/Diff.tmLanguage",
+							"word_wrap": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 48.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.markdown":
+	{
+		"height": 218.0
+	},
+	"pinned_build_system": "",
+	"project": ".sublime-project",
+	"replace":
+	{
+		"height": 88.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 300.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
