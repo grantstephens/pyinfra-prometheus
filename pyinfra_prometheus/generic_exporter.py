@@ -55,12 +55,12 @@ def install_exporter(
     )
 
     # If we downloaded exporter, extract it!
-    server.shell(
-        state, host,
-        {'Extract exporter'},
-        'tar -xzf {} -C {}/'.format(ex_temp_filename, ex_install_dir),
-        when=download_exporter.changed,
-    )
+    if download_exporter.changed:
+        server.shell(
+            state, host,
+            {'Extract exporter'},
+            'tar -xzf {} -C {}/'.format(ex_temp_filename, ex_install_dir),
+        )
 
     files.link(
         state, host,
