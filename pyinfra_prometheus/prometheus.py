@@ -61,13 +61,13 @@ def install_prometheus(state, host):
     )
 
     # If we downloaded prometheus, extract it!
-    server.shell(
-        state, host,
-        {'Extract prometheus'},
-        'tar -xzf {{ host.data.prometheus_temp_filename }}'
-        ' -C {{ host.data.prometheus_install_dir }}',
-        when=download_prometheus.changed,
-    )
+    if download_prometheus.changed:
+        server.shell(
+            state, host,
+            {'Extract prometheus'},
+            'tar -xzf {{ host.data.prometheus_temp_filename }}'
+            ' -C {{ host.data.prometheus_install_dir }}',
+        )
 
     files.link(
         state, host,

@@ -53,13 +53,13 @@ def install_node_exporter(state, host):
     )
 
     # If we downloaded node_exporter, extract it!
-    server.shell(
-        state, host,
-        {'Extract node_exporter'},
-        'tar -xzf {{ host.data.node_exporter_temp_filename }}'
-        ' -C {{ host.data.node_exporter_install_dir }}',
-        when=download_node_exporter.changed,
-    )
+    if download_node_exporter.changed:
+        server.shell(
+            state, host,
+            {'Extract node_exporter'},
+            'tar -xzf {{ host.data.node_exporter_temp_filename }}'
+            ' -C {{ host.data.node_exporter_install_dir }}',
+        )
 
     files.link(
         state, host,
