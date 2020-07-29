@@ -2,7 +2,7 @@
 # File: pyinfra_prometheus/node_exporter.py
 # Desc: installs/configures node_exporter as a systemd service using pyinfra
 
-from pyinfra.api import deploy, DeployError
+from pyinfra.api import deploy
 from pyinfra.modules import files, init, server
 
 from .defaults import DEFAULTS
