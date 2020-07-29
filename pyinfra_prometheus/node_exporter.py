@@ -17,18 +17,20 @@ def install_node_exporter(state, host):
         )
 
     server.user(
-        state, host,
-        {'Create the node_exporter user (Called prometheus by default)'},
-        '{{ host.data.node_exporter_user }}',
+        name='Create the node_exporter user (Called prometheus by default)',
+        user='{{ host.data.node_exporter_user }}',
         shell='/sbin/nologin',
+        state=state,
+        host=host,
     )
 
     files.directory(
-        state, host,
-        {'Ensure the node_exporter install directory exists'},
-        '{{ host.data.node_exporter_install_dir }}',
+        name='Ensure the node_exporter install directory exists',
+        path='{{ host.data.node_exporter_install_dir }}',
         user=host.data.node_exporter_user,
         group=host.data.node_exporter_user,
+        state=state,
+        host=host,
     )
 
     # Work out the filename
@@ -42,31 +44,34 @@ def install_node_exporter(state, host):
     )
 
     download_node_exporter = files.download(
-        state, host,
-        {'Download node_exporter'},
-        (
+        name='Download node_exporter',
+        src=(
             '{{ host.data.node_exporter_download_base_url }}/'
             'v{{ host.data.node_exporter_version }}/'
             '{{ host.data.node_exporter_version_name }}.tar.gz'
         ),
-        '{{ host.data.node_exporter_temp_filename }}',
+        dest='{{ host.data.node_exporter_temp_filename }}',
+        state=state,
+        host=host,
     )
 
     # If we downloaded node_exporter, extract it!
     if download_node_exporter.changed:
         server.shell(
-            state, host,
-            {'Extract node_exporter'},
-            'tar -xzf {{ host.data.node_exporter_temp_filename }}'
+            name='Extract node_exporter',
+            commands='tar -xzf {{ host.data.node_exporter_temp_filename }}'
             ' -C {{ host.data.node_exporter_install_dir }}',
+            state=state,
+            host=host,
         )
 
     files.link(
-        state, host,
-        {'Symlink node_exporter to /usr/bin'},
-        '{{ host.data.node_exporter_bin_dir }}/node_exporter',  # link
-        '{{ host.data.node_exporter_install_dir }}/'
+        name='Symlink node_exporter to /usr/bin',
+        src='{{ host.data.node_exporter_bin_dir }}/node_exporter',  # link
+        target='{{ host.data.node_exporter_install_dir }}/'
         '{{ host.data.node_exporter_version_name }}/node_exporter',
+        state=state,
+        host=host,
     )
 
 
@@ -80,42 +85,46 @@ def configure_node_exporter(state, host, enable_service=True, extra_args=None):
     if host.fact.linux_distribution['major'] >= 16:
         # Setup node_exporter init
         generate_service = files.template(
-            state, host,
-            {'Upload the node_exporter systemd unit file'},
-            get_template_path('node_exporter.service.j2'),
-            '/etc/systemd/system/node_exporter.service',
+            name='Upload the node_exporter systemd unit file',
+            src=get_template_path('node_exporter.service.j2'),
+            dest='/etc/systemd/system/node_exporter.service',
             extra_args=extra_args,
+            state=state,
+            host=host,
         )
 
         init.systemd(
-            state, host,
-            {op_name},
-            'node_exporter',
+            name=op_name,
+            service='node_exporter',
             running=True,
             restarted=generate_service.changed,
             daemon_reload=generate_service.changed,
             enabled=enable_service,
+            state=state,
+            host=host,
         )
 
     elif host.fact.linux_distribution['major'] == 14:
         generate_service = files.template(
-            state, host,
-            {'Upload the node_exporter init.d file'},
-            get_template_path('init.d.j2'),
-            '/etc/init.d/node_exporter',
+            name='Upload the node_exporter init.d file',
+            src=get_template_path('init.d.j2'),
+            dest='/etc/init.d/node_exporter',
             mode=755,
             ex_name='node_exporter',
             ex_bin_dir=host.data.node_exporter_bin_dir,
             ex_user=host.data.node_exporter_user,
             extra_args=extra_args,
+            state=state,
+            host=host,
         )
         # Start (/enable) the prometheus service
         init.d(
-            state, host,
-            {op_name},
-            'node_exporter',
+            name=op_name,
+            service='node_exporter',
             running=True,
             restarted=generate_service.changed,
             reloaded=generate_service.changed,
             enabled=enable_service,
+            state=state,
+            host=host,
         )
