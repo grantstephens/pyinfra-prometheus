@@ -67,7 +67,7 @@ def install_node_exporter(state, host):
 
     files.link(
         name='Symlink node_exporter to /usr/bin',
-        src='{{ host.data.node_exporter_bin_dir }}/node_exporter',  # link
+        path='{{ host.data.node_exporter_bin_dir }}/node_exporter',  # link
         target='{{ host.data.node_exporter_install_dir }}/'
         '{{ host.data.node_exporter_version_name }}/node_exporter',
         state=state,
