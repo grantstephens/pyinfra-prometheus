@@ -3,7 +3,7 @@
 # Desc: installs/configures prometheus as a systemd service using pyinfra
 
 from pyinfra.api import deploy, DeployError
-from pyinfra.modules import files, init, server
+from pyinfra.operations import files, init, server
 
 from .defaults import DEFAULTS
 from .util import get_template_path
