@@ -17,12 +17,13 @@ def _get_names(ex_url):
 
 @deploy('Install an exporter', data_defaults=DEFAULTS)
 def install_exporter(
-    state, host, ex_url,
+    ex_url,
     ex_install_dir=None,
     ex_user='prometheus',
     ex_bin_dir='/usr/local/bin',
+    state=None,
+    host=None,
 ):
-
     if ex_install_dir is None:
         ex_install_dir = '/usr/local'
 
@@ -77,11 +78,13 @@ def install_exporter(
 
 @deploy('Configure exporter', data_defaults=DEFAULTS)
 def configure_exporter(
-    state, host, ex_url,
+    ex_url,
     ex_user='prometheus',
     ex_bin_dir='/usr/local/bin',
     enable_service=True,
     extra_args=None,
+    state=None,
+    host=None,
 ):
     ex_name, ex_bin_name = _get_names(ex_url)
 

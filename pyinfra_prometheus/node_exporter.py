@@ -10,7 +10,7 @@ from .util import get_template_path
 
 
 @deploy('Install node_exporter', data_defaults=DEFAULTS)
-def install_node_exporter(state, host):
+def install_node_exporter(state=None, host=None):
     if not host.data.node_exporter_version:
         raise DeployError(
             'No node_exporter_version set for this host, refusing to install node_exporter!',
@@ -76,7 +76,9 @@ def install_node_exporter(state, host):
 
 
 @deploy('Configure node_exporter', data_defaults=DEFAULTS)
-def configure_node_exporter(state, host, enable_service=True, extra_args=None):
+def configure_node_exporter(enable_service=True, extra_args=None, state=None, host=None):
+    if isinstance(extra_args, list):
+        extra_args = ' '.join(extra_args)
 
     op_name = 'Ensure node_exporter service is running'
     if enable_service:

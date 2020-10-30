@@ -10,7 +10,7 @@ from .util import get_template_path
 
 
 @deploy('Install prometheus', data_defaults=DEFAULTS)
-def install_prometheus(state, host):
+def install_prometheus(state=None, host=None):
     if not host.data.prometheus_version:
         raise DeployError(
             'No prometheus_version set for this host, refusing to install prometheus!',
@@ -84,7 +84,7 @@ def install_prometheus(state, host):
 
 
 @deploy('Configure prometheus', data_defaults=DEFAULTS)
-def configure_prometheus(state, host, enable_service=True, extra_args=None):
+def configure_prometheus(enable_service=True, extra_args=None, state=None, host=None):
     # Configure prometheus
     generate_config = files.template(
         name='Upload the prometheus config file',
