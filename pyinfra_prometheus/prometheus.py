@@ -18,7 +18,7 @@ def install_prometheus(state=None, host=None):
 
     server.user(
         name='Create the prometheus user',
-        user='{{ host.data.prometheus_user }}',
+        user=host.data.prometheus_user,
         shell='/sbin/nologin',
         state=state,
         host=host,
@@ -26,7 +26,7 @@ def install_prometheus(state=None, host=None):
 
     files.directory(
         name='Ensure the prometheus data directory exists',
-        path='{{ host.data.prometheus_data_dir }}',
+        path=host.data.prometheus_data_dir,
         user=host.data.prometheus_user,
         group=host.data.prometheus_user,
         state=state,
@@ -35,7 +35,7 @@ def install_prometheus(state=None, host=None):
 
     files.directory(
         name='Ensure the prometheus install directory exists',
-        path='{{ host.data.prometheus_install_dir }}',
+        path=host.data.prometheus_install_dir,
         user=host.data.prometheus_user,
         group=host.data.prometheus_user,
         state=state,
@@ -55,11 +55,11 @@ def install_prometheus(state=None, host=None):
     download_prometheus = files.download(
         name='Download prometheus',
         src=(
-            '{{ host.data.prometheus_download_base_url }}/'
-            'v{{ host.data.prometheus_version }}/'
-            '{{ host.data.prometheus_version_name }}.tar.gz'
+            f'{host.data.prometheus_download_base_url}/'
+            f'v{host.data.prometheus_version}/'
+            f'{host.data.prometheus_version_name}.tar.gz'
         ),
-        dest='{{ host.data.prometheus_temp_filename }}',
+        dest=f'{host.data.prometheus_temp_filename}',
         state=state,
         host=host,
     )
@@ -68,16 +68,16 @@ def install_prometheus(state=None, host=None):
     if download_prometheus.changed:
         server.shell(
             name='Extract prometheus',
-            commands='tar -xzf {{ host.data.prometheus_temp_filename }}'
-            ' -C {{ host.data.prometheus_install_dir }}',
+            commands=f'tar -xzf {host.data.prometheus_temp_filename}'
+            f' -C {host.data.prometheus_install_dir}',
             state=state,
             host=host,
         )
 
     files.link(
         name='Symlink prometheus to /usr/bin',
-        path='{{ host.data.prometheus_bin_dir }}/prometheus',  # link
-        target='{{ host.data.prometheus_install_dir }}/{{ host.data.prometheus_version_name }}/prometheus',
+        path=f'{host.data.prometheus_bin_dir}/prometheus',  # link
+        target=f'{host.data.prometheus_install_dir}/{host.data.prometheus_version_name}/prometheus',
         state=state,
         host=host,
     )
