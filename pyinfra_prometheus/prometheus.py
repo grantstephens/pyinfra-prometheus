@@ -101,7 +101,8 @@ def configure_prometheus(enable_service=True, extra_args=None, state=None, host=
         op_name = '{0} and enabled'.format(op_name)
         restart = generate_config.changed
 
-    if extra_args and ('--web.enable-lifecycle' in extra_args):
+    was_running = host.fact.systemd_status.get('prometheus', False)
+    if was_running and extra_args and ('--web.enable-lifecycle' in extra_args):
         restart = False
         hit_reload_endpoint = True
     else:
