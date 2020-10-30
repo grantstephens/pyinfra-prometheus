@@ -85,6 +85,9 @@ def install_prometheus(state=None, host=None):
 
 @deploy('Configure prometheus', data_defaults=DEFAULTS)
 def configure_prometheus(enable_service=True, extra_args=None, state=None, host=None):
+    if isinstance(extra_args, list):
+        extra_args = ' '.join(extra_args)
+
     # Configure prometheus
     generate_config = files.template(
         name='Upload the prometheus config file',
