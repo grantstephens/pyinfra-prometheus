@@ -8,7 +8,7 @@ if __name__ == '__main__':
         url='https://github.com/grantstephens/pyinfra-prometheus',
         description='Install & bootstrap prometheus clusters with pyinfra.',
         packages=find_packages(),
-        install_requires=('pyinfra>=1'),
+        install_requires=('pyinfra~=1.2'),
         include_package_data=True,
         license='MIT',
     )
