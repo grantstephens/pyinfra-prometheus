@@ -3,7 +3,7 @@
 # Desc: installs/configures prometheus as a systemd service using pyinfra
 
 from pyinfra.api import deploy, DeployError
-from pyinfra.operations import files, init, server
+from pyinfra.operations import files, server, systemd
 
 from .defaults import DEFAULTS
 from .util import get_template_path
@@ -103,52 +103,30 @@ def configure_prometheus(enable_service=True, extra_args=None, state=None, host=
         hit_reload_endpoint = True
     else:
         hit_reload_endpoint = False
-    # Setup prometheus init
-    if host.fact.linux_distribution['major'] >= 16:
-        generate_service = files.template(
-            name='Upload the prometheus systemd unit file',
-            src=get_template_path('prometheus.service.j2'),
-            dest='/etc/systemd/system/prometheus.service',
-            extra_args=extra_args,
-            state=state,
-            host=host,
-        )
-        # Start (/enable) the prometheus service
-        init.systemd(
-            name=op_name,
-            service='prometheus',
-            running=True,
-            restarted=restart,
-            enabled=enable_service,
-            daemon_reload=generate_service.changed,
-            state=state,
-            host=host,
-        )
-        # This has to happen after the service reload
-        if hit_reload_endpoint:
-            server.shell(
-                commands='curl -X POST http://localhost:9090/-/reload',
-                state=state,
-                host=host,
-            )
 
-    elif host.fact.linux_distribution['major'] == 14:
-        generate_service = files.template(
-            name='Upload the prometheus init.d file',
-            src=get_template_path('init.d.j2'),
-            dest='/etc/init.d/prometheus',
-            extra_args=extra_args,
-            state=state,
-            host=host,
-        )
-        # Start (/enable) the prometheus service
-        init.d(
-            name=op_name,
-            service='prometheus',
-            running=True,
-            restarted=restart,
-            reloaded=generate_service.changed,
-            enabled=enable_service,
+    generate_service = files.template(
+        name='Upload the prometheus systemd unit file',
+        src=get_template_path('prometheus.service.j2'),
+        dest='/etc/systemd/system/prometheus.service',
+        extra_args=extra_args,
+        state=state,
+        host=host,
+    )
+
+    systemd.service(
+        name=op_name,
+        service='prometheus',
+        running=True,
+        restarted=restart,
+        enabled=enable_service,
+        daemon_reload=generate_service.changed,
+        state=state,
+        host=host,
+    )
+
+    if hit_reload_endpoint:
+        server.shell(
+            commands='curl -X POST http://localhost:9090/-/reload',
             state=state,
             host=host,
         )

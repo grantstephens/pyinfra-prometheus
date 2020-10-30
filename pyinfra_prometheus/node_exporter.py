@@ -3,7 +3,7 @@
 # Desc: installs/configures node_exporter as a systemd service using pyinfra
 
 from pyinfra.api import deploy, DeployError
-from pyinfra.operations import files, init, server
+from pyinfra.operations import files, server, systemd
 
 from .defaults import DEFAULTS
 from .util import get_template_path
@@ -84,49 +84,22 @@ def configure_node_exporter(enable_service=True, extra_args=None, state=None, ho
     if enable_service:
         op_name = '{0} and enabled'.format(op_name)
 
-    if host.fact.linux_distribution['major'] >= 16:
-        # Setup node_exporter init
-        generate_service = files.template(
-            name='Upload the node_exporter systemd unit file',
-            src=get_template_path('node_exporter.service.j2'),
-            dest='/etc/systemd/system/node_exporter.service',
-            extra_args=extra_args,
-            state=state,
-            host=host,
-        )
+    generate_service = files.template(
+        name='Upload the node_exporter systemd unit file',
+        src=get_template_path('node_exporter.service.j2'),
+        dest='/etc/systemd/system/node_exporter.service',
+        extra_args=extra_args,
+        state=state,
+        host=host,
+    )
 
-        init.systemd(
-            name=op_name,
-            service='node_exporter',
-            running=True,
-            restarted=generate_service.changed,
-            daemon_reload=generate_service.changed,
-            enabled=enable_service,
-            state=state,
-            host=host,
-        )
-
-    elif host.fact.linux_distribution['major'] == 14:
-        generate_service = files.template(
-            name='Upload the node_exporter init.d file',
-            src=get_template_path('init.d.j2'),
-            dest='/etc/init.d/node_exporter',
-            mode=755,
-            ex_name='node_exporter',
-            ex_bin_dir=host.data.node_exporter_bin_dir,
-            ex_user=host.data.node_exporter_user,
-            extra_args=extra_args,
-            state=state,
-            host=host,
-        )
-        # Start (/enable) the prometheus service
-        init.d(
-            name=op_name,
-            service='node_exporter',
-            running=True,
-            restarted=generate_service.changed,
-            reloaded=generate_service.changed,
-            enabled=enable_service,
-            state=state,
-            host=host,
-        )
+    systemd.service(
+        name=op_name,
+        service='node_exporter',
+        running=True,
+        restarted=generate_service.changed,
+        daemon_reload=generate_service.changed,
+        enabled=enable_service,
+        state=state,
+        host=host,
+    )
