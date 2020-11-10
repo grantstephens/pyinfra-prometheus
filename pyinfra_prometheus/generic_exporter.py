@@ -3,7 +3,7 @@
 # Desc: installs/configures node_exporter as a systemd service using pyinfra
 
 from pyinfra.api import deploy
-from pyinfra.operations import files, init, server
+from pyinfra.operations import files, server, systemd
 
 from .defaults import DEFAULTS
 from .util import get_template_path
@@ -17,12 +17,13 @@ def _get_names(ex_url):
 
 @deploy('Install an exporter', data_defaults=DEFAULTS)
 def install_exporter(
-    state, host, ex_url,
+    ex_url,
     ex_install_dir=None,
     ex_user='prometheus',
     ex_bin_dir='/usr/local/bin',
+    state=None,
+    host=None,
 ):
-
     if ex_install_dir is None:
         ex_install_dir = '/usr/local'
 
@@ -77,11 +78,13 @@ def install_exporter(
 
 @deploy('Configure exporter', data_defaults=DEFAULTS)
 def configure_exporter(
-    state, host, ex_url,
+    ex_url,
     ex_user='prometheus',
     ex_bin_dir='/usr/local/bin',
     enable_service=True,
     extra_args=None,
+    state=None,
+    host=None,
 ):
     ex_name, ex_bin_name = _get_names(ex_url)
 
@@ -90,54 +93,26 @@ def configure_exporter(
     if enable_service:
         op_name = '{0} and enabled'.format(op_name)
 
-    if host.fact.linux_distribution['major'] >= 16:
-        # Setup node_exporter init
-        generate_service = files.template(
-            name='Upload the {} systemd unit file'.format(ex_name),
-            src=get_template_path('exporter.service.j2'),
-            dest='/etc/systemd/system/{}.service'.format(ex_bin_name),
-            ex_name=ex_name,
-            ex_bin_dir=ex_bin_dir,
-            ex_user=ex_user,
-            extra_args=extra_args,
-            state=state,
-            host=host,
-        )
+    generate_service = files.template(
+        name='Upload the {} systemd unit file'.format(ex_name),
+        src=get_template_path('exporter.service.j2'),
+        dest='/etc/systemd/system/{}.service'.format(ex_bin_name),
+        ex_name=ex_name,
+        ex_bin_dir=ex_bin_dir,
+        ex_user=ex_user,
+        extra_args=extra_args,
+        state=state,
+        host=host,
+    )
 
-        init.systemd(
-            name=op_name,
-            service=ex_bin_name,
-            running=True,
-            restarted=generate_service.changed,
-            reloaded=generate_service.changed,
-            enabled=enable_service,
-            daemon_reload=generate_service.changed,
-            state=state,
-            host=host,
-        )
-
-    elif host.fact.linux_distribution['major'] == 14:
-        generate_service = files.template(
-            name='Upload the {} init.d file'.format(ex_name),
-            src=get_template_path('init.d.j2'),
-            dest='/etc/init.d/{}'.format(ex_name),
-            mode=755,
-            ex_name=ex_name,
-            ex_bin_dir=ex_bin_dir,
-            ex_user=ex_user,
-            extra_args=extra_args,
-            state=state,
-            host=host,
-        )
-
-        # Start (/enable) the prometheus service
-        init.d(
-            name=op_name,
-            service=ex_name,
-            running=True,
-            restarted=generate_service.changed,
-            reloaded=generate_service.changed,
-            enabled=enable_service,
-            state=state,
-            host=host,
-        )
+    systemd.service(
+        name=op_name,
+        service=ex_bin_name,
+        running=True,
+        restarted=generate_service.changed,
+        reloaded=generate_service.changed,
+        enabled=enable_service,
+        daemon_reload=generate_service.changed,
+        state=state,
+        host=host,
+    )
